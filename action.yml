@@ -1,0 +1,49 @@
+name: Haunted Contribution Graph
+description: A ghost haunts your GitHub contribution graph. Generates animated Halloween SVGs for your profile README.
+author: Octojet666
+branding:
+  icon: moon
+  color: purple
+
+inputs:
+  github_user_name:
+    description: Whose graph to haunt.
+    default: ${{ github.repository_owner }}
+  github_token:
+    description: Token used to read contributions and push the output branch.
+    default: ${{ github.token }}
+  output_branch:
+    description: Branch the SVGs are force-pushed to.
+    default: output
+  themes:
+    description: Comma-separated list of themes to generate (dark, light).
+    default: dark,light
+  duration:
+    description: Seconds per animation loop.
+    default: "28"
+
+runs:
+  using: composite
+  steps:
+    - name: Summon the ghost
+      shell: bash
+      env:
+        HAUNT_USER: ${{ inputs.github_user_name }}
+        HAUNT_THEMES: ${{ inputs.themes }}
+        HAUNT_DURATION: ${{ inputs.duration }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: node "$GITHUB_ACTION_PATH/src/index.mjs" --user "$HAUNT_USER" --themes "$HAUNT_THEMES" --duration "$HAUNT_DURATION" --out dist
+
+    - name: Bury it on the output branch
+      shell: bash
+      env:
+        BRANCH: ${{ inputs.output_branch }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        cd dist
+        git init -q -b "$BRANCH"
+        git config user.name "haunted-contribution-graph[bot]"
+        git config user.email "haunted-contribution-graph@users.noreply.github.com"
+        git add .
+        git commit -q -m "chore: the ghost has passed"
+        git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"

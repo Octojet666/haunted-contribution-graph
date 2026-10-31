@@ -1,0 +1,19 @@
+# Save as .github/workflows/haunt.yml in your <username>/<username> profile repo.
+name: Haunt my graph
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # nightly
+  workflow_dispatch: # run it by hand once to create the output branch
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  haunt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: Octojet666/haunted-contribution-graph@main
